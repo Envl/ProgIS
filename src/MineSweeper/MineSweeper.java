@@ -61,6 +61,9 @@ public class MineSweeper extends Application {
   Cell[][] gameTable = new Cell[rows][cols]; // 0-8 mines around
   ArrayHelper tableHelper = new ArrayHelper(rows, cols);
 // GUI objc
+  // 改用 stack pane  用来支持拖拽事件
+  //   使用道具 就能拖拽交换两个 雷 的位置??
+  // 图像识别?  像素化, 然后生成雷 map??
   GridPane gameBoard = new GridPane();
   Button grids[] = new Button[rows * cols];
 
@@ -224,7 +227,7 @@ void initGame(){
 
     System.out.println(grids[0]);
 
-    primaryStage.setTitle("Temp Converter");
+    primaryStage.setTitle("Mine Sweeper");
     primaryStage.setScene(new Scene(gameBoard, cols * gridSize, rows * gridSize+HEAD_HEIGHT));
     primaryStage.setWidth(cols*gridSize);
     primaryStage.setHeight(rows*gridSize+HEAD_HEIGHT);
