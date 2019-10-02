@@ -3,11 +3,14 @@ package MineSweeper;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Control;
-import javafx.scene.input.MouseButton;
-import javafx.scene.layout.Background;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import org.opencv.core.Core;
+
+// todo
+// MVCfy  (in progress
 
 class Cell {
   int _num = 0;
@@ -15,6 +18,7 @@ class Cell {
   boolean _isMine = false;
   boolean _revealedAround=false;
   boolean _underChecking=false; // to avoid StackOverFlow caused by inter invoking of adjacent grids
+
 
   public Cell(int n) {
     _num = n;
@@ -51,22 +55,27 @@ class Cell {
 
 public class MineSweeper extends Application {
   // const values
-  final int cols = 10;
-  final int rows = 10;
-  final int gridSize = 40;
+  final int COLS = 10;
+  final int ROWS = 10;
+  final int GRID_SIZE = 40;
   final int HEAD_HEIGHT=50;
-
   final String STYLE_REVEALED="-fx-background-color: #eeeeee;";
+
   // variables
-  Cell[][] gameTable = new Cell[rows][cols]; // 0-8 mines around
-  ArrayHelper tableHelper = new ArrayHelper(rows, cols);
-// GUI objc
+  Cell[][] gameTable = new Cell[ROWS][COLS]; // 0-8 mines around
+  ArrayHelper tableHelper = new ArrayHelper(ROWS, COLS);
+  CVAgent cvAgent=new CVAgent();
+  GameModel model=new GameModel(ROWS, COLS);
+  // GUI objc
   // 改用 stack pane  用来支持拖拽事件
   //   使用道具 就能拖拽交换两个 雷 的位置??
   // 图像识别?  像素化, 然后生成雷 map??
   GridPane gameBoard = new GridPane();
-  Button grids[] = new Button[rows * cols];
+  Button grids[] = new Button[ROWS * COLS];
 
+  static{
+    System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+  }
   public static void main(String[] args) {
     launch(args);
   }
@@ -91,8 +100,8 @@ public class MineSweeper extends Application {
     }
     // reveal self
     gameTable[row][col].set_state(1);// set revealed in MODEL
-    grids[cols*row+col].setText(String.valueOf(gameTable[row][col]._num)); // show text on btn
-    grids[cols*row+col].setStyle(STYLE_REVEALED);// update style
+    grids[COLS *row+col].setText(String.valueOf(gameTable[row][col]._num)); // show text on btn
+    grids[COLS *row+col].setStyle(STYLE_REVEALED);// update style
     // reveal around if self is 0
     if( gameTable[row][col]._num!=0
     || gameTable[row][col]._revealedAround
@@ -116,35 +125,36 @@ public class MineSweeper extends Application {
   public void init() throws Exception {
     super.init();
 
-    // Buttons
+    // GUI Components
     Button btnStart=new Button("(Re)Start Game");
     gameBoard.add(btnStart,0,0,3,1);
     btnStart.setOnMouseClicked(evt->{
       Button tmp=(Button)evt.getSource();
       initGame();
     });
-
+    ImageView cameraView=new ImageView();
+    gameBoard.add(cameraView,4,0);
     // 需要包装一个 controller 类, 把下面代码放进去
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < ROWS; i++) {
       System.out.println(i);
-      for (int j = 0; j < cols; j++) {
+      for (int j = 0; j < COLS; j++) {
         gameTable[i][j] = new Cell();
       }
     }
     // 要包装进 Cell 类里面, 然后这里只从gameTable获取每个Button添加到 gameBoard
-    for (int row = 0; row < rows; row++) {
-      for (int col = 0; col < cols; col++) {
-        grids[cols * row + col] = new Button("\uD83D\uDE04");
+    for (int row = 0; row < ROWS; row++) {
+      for (int col = 0; col < COLS; col++) {
+        grids[COLS * row + col] = new Button("\uD83D\uDE04");
 //        grids[cols * row + col].setText("O");
-        grids[cols * row + col].setPrefWidth(gridSize );
-        grids[cols * row + col].setPrefHeight(gridSize);
-        grids[cols * row + col].setId(row+","+col);
-        grids[cols * row + col].setOnMouseClicked(evt -> {
+        grids[COLS * row + col].setPrefWidth(GRID_SIZE);
+        grids[COLS * row + col].setPrefHeight(GRID_SIZE);
+        grids[COLS * row + col].setId(row+","+col);
+        grids[COLS * row + col].setOnMouseClicked(evt -> {
           System.out.println(evt.getSource());
           Button btn=(Button)evt.getSource();
-          String tmpL[]=btn.getId().split(",");
-          int tmpR= Integer.valueOf( tmpL[0]);
-          int tmpC= Integer.valueOf( tmpL[1]);
+          String[] tmpL =btn.getId().split(",");
+          int tmpR= Integer.parseInt( tmpL[0]);
+          int tmpC= Integer.parseInt( tmpL[1]);
           switch (evt.getButton()) {
             case PRIMARY:
               gameTable[tmpR][tmpC].set_state(1); // open
@@ -168,40 +178,41 @@ public class MineSweeper extends Application {
           }
         });
         // row 0 is reserved for other Controls
-        gameBoard.add(grids[cols * row + col], col, row+1);
+        gameBoard.add(grids[COLS * row + col], col, row+1);
       }
     }
 
 
 
     initGame();
+    cvAgent.setCameraView(cameraView);
 
   }
 
 void initGame(){
   // put mines and init state
-  for (int i = 0; i < rows; i++) {
+  for (int i = 0; i < ROWS; i++) {
     System.out.println(i);
-    for (int j = 0; j < cols; j++) {
-      gameTable[i][j].set_isMine(Math.random() < 0.1 ? true : false);
+    for (int j = 0; j < COLS; j++) {
+      gameTable[i][j].set_isMine(Math.random() < 0.1);
       gameTable[i][j].set_state(0);
       gameTable[i][j]._revealedAround=false;
       gameTable[i][j]._underChecking=false;
       // init styles
-      grids[cols * i + j].setStyle(
+      grids[COLS * i + j].setStyle(
               "-fx-background-color: #D7E0EC;" +
               "-fx-border: #ff0000 2px;"+
               "-fx-border-color:#777777;" +
               "-fx-border-width: 1;"
       );
       // reset text
-      grids[cols * i + j].setText("\uD83D\uDE04");
+      grids[COLS * i + j].setText("\uD83D\uDE04");
     }
   }
   // count mines
   System.out.println("Game Table with count");
-  for (int i = 0; i < rows; i++) {
-    for (int j = 0; j < cols; j++) {
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLS; j++) {
       gameTable[i][j].set_num(mineCounter(j, i));
       System.out.print(gameTable[i][j]._num);
     }
@@ -210,8 +221,8 @@ void initGame(){
   System.out.println();
   System.out.println("Mine Table");
   // print mine table
-  for (int i = 0; i < rows; i++) {
-    for (int j = 0; j < cols; j++) {
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLS; j++) {
       System.out.print(gameTable[i][j]._isMine ? 1 : 0);
     }
     System.out.println();
@@ -224,13 +235,20 @@ void initGame(){
   @Override
   public void start(Stage primaryStage) throws Exception {
 
-
+    cvAgent.startCamera();
     System.out.println(grids[0]);
 
     primaryStage.setTitle("Mine Sweeper");
-    primaryStage.setScene(new Scene(gameBoard, cols * gridSize, rows * gridSize+HEAD_HEIGHT));
-    primaryStage.setWidth(cols*gridSize);
-    primaryStage.setHeight(rows*gridSize+HEAD_HEIGHT);
+    primaryStage.setScene(new Scene(gameBoard, COLS * GRID_SIZE, ROWS * GRID_SIZE +HEAD_HEIGHT));
+    primaryStage.setWidth(COLS * GRID_SIZE);
+    primaryStage.setHeight(ROWS * GRID_SIZE +HEAD_HEIGHT);
     primaryStage.show();
+
+    // Cleaning job before destroy
+    primaryStage.setOnCloseRequest((WindowEvent evt) -> {
+      System.out.println("Closing App");
+      System.out.println(evt);
+      cvAgent.setClosed();
+    });
   }
 }

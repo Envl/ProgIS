@@ -10,7 +10,7 @@ public class ArrayHelper {
     _cols = cols;
   }
 
-  public boolean testInside(int row, int col) {
+  public  boolean testInside(int row, int col) {
     return col >= 0 && col < _cols && row >= 0 && row < _rows;
   }
 
