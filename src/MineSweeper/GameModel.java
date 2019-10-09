@@ -65,7 +65,9 @@ public class GameModel {
         gameTable[i][j] = new Cell();
       }
     }
+    initTable();
   }
+
 
   int countMineAround(int row, int col,boolean[][] mineTable) {
     int amount = 0;
@@ -80,7 +82,7 @@ public class GameModel {
   }
 
   // DFS auto reveal surrounding grids
-  void revealAround(int row,int col){
+  void revealCell(int row, int col){
     // out bound check
     if(!tableHelper.testInside(row,col) ){
       return;
@@ -97,7 +99,7 @@ public class GameModel {
     // check around
     for (int i = -1; i < 2; i++) {
       for (int j = -1; j < 2; j++) {
-        revealAround(row+i,col+j);
+        revealCell(row+i,col+j);
       }
     }
     // after check around
@@ -113,6 +115,10 @@ public class GameModel {
       }
     }
     return table;
+  }
+
+  void flagCell(int row,int col){
+    gameTable[row][col]._state=-1;
   }
 
   void initTable(){
