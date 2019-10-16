@@ -85,4 +85,9 @@ public final class Utils
 
     return image;
   }
+
+  public static float clamp(float value, float start, float end) {
+    return Math.max(start, Math.min(value, end));
+  }
+
 }
