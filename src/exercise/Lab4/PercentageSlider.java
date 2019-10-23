@@ -33,10 +33,8 @@ public class PercentageSlider extends Slider implements ValueListener {
         //Do something with the controller
         System.out.println("evt changed");
         System.out.println(newValue);
-        if (!newValue.equals(oldValue)){
 
-					myController.setValue(this,newValue.doubleValue());
-				}
+					myController.setValue(getValue()/100.0f);
       }
     });
   }

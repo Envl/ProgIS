@@ -18,8 +18,7 @@ public class Percentage_Model  {
 	 **/
 	public Percentage_Model(double initialValue) {
         listenerValueList = new ArrayList<>();
-//        setValue(initialValue);
-		myValue = Math.round(initialValue);
+        setValue(initialValue);
 	}
 
 	public Percentage_Model() {
@@ -32,10 +31,10 @@ public class Percentage_Model  {
 	}
 
 	//Notify all the listener that the value has been changed
-	private void fireValueChanged(Object source){
+	private void fireValueChanged(){
         for(ValueListener listener: listenerValueList){
         	//TODO do something with the listener
-					listener.valueChanged(new ValueChangedEvent(source,getValue()));
+					listener.valueChanged(new ValueChangedEvent(this,getValue()));
 		}
 	}
 
@@ -53,16 +52,15 @@ public class Percentage_Model  {
 	 * @returns the current value
 	 **/
 	public double getValue() {
-		return myValue / 100f;
+		return myValue ;
 	}
 
 
 	//Modify the value
-    public void setValue(Object source,double value) {
-		value/=100.0f;
+    public void setValue(double value) {
         if (valueIsOK(value) ){
-            myValue = Math.round(value * 100);
-            fireValueChanged(source);
+            myValue = Math.round(value*100);
+            fireValueChanged();
         } else {
             throw (new IllegalArgumentException("Bad percentage value: " + value));
         }

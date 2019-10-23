@@ -46,7 +46,7 @@ public class PercentagePieChart  extends Canvas implements ValueListener {
          this.addEventHandler(MouseEvent.MOUSE_DRAGGED,event -> {
              if (isPressedOnPin) {
 //                 myController.notifyValueChanged(pointToPercentage(event));
-                 myController.setValue("src_pie",pointToPercentage(event));
+                 myController.setValue(pointToPercentage(event));
              }
          });
 
@@ -129,7 +129,8 @@ public class PercentagePieChart  extends Canvas implements ValueListener {
 	}
 
 	@Override
-	public void valueChanged(ValueChangedEvent event) {
+	public void valueChanged(ValueChangedEvent evt) {
+			this.drawShapes(evt.getNewValue()/100.0f);
 
 	}
 }

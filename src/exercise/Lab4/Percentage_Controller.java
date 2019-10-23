@@ -24,9 +24,9 @@ public class Percentage_Controller implements Controller_Interface {
    * @param value : the value
    * @throws IllegalArgumentException if value is not correct
    **/
-  public void setValue(Object source,Double value) {
+  public void setValue(Double value) {
     //TODO set the value of the model
-    myModel.setValue(source,value);
+    myModel.setValue(value);
   }
 
 
@@ -63,7 +63,6 @@ public class Percentage_Controller implements Controller_Interface {
 
   public void notifyValueChanged(double value) {
     //TODO refere the model that the value changed
-//    myModel.setValue(this,value);// this method will notify all listeners
   }
 
 
