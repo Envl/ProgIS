@@ -32,7 +32,6 @@ public class GameModel {
     public void set_num(int _num) {
       this._num = _num;
     }
-
     public int get_state() {
       return _state;
     }
@@ -42,8 +41,17 @@ public class GameModel {
     }
   }
 
-  private int _cols = 10;
-  private int _rows = 10;
+  public int life = GLOBAL.LIFE;
+
+  public void reduceLife(int l){
+    life=GLOBAL.LIFE-l;
+    if (life<0){
+      life=0;
+    }
+  }
+
+  private int _cols = GLOBAL.COLS;
+  private int _rows = GLOBAL.ROWS;
   Cell[][] gameTable;
   private ArrayHelper tableHelper;
 
@@ -55,19 +63,8 @@ public class GameModel {
     return _rows;
   }
 
-  GameModel(int rows,int cols,float chance) {
-//    _cols = colCount;
-//    _rows = rowCount;
-//    gameTable = new Cell[_rows][_cols];
-//    tableHelper = new ArrayHelper(_rows, _cols);
-//    // create game table
-//    for (int i = 0; i < _rows; i++) {
-//      System.out.println(i);
-//      for (int j = 0; j < _cols; j++) {
-//        gameTable[i][j] = new Cell();
-//      }
-//    }
-    initTable(genMineTable(rows,cols,chance));
+  GameModel(int rows, int cols, float chance) {
+    initTable(genMineTable(rows, cols, chance));
   }
 
 
@@ -91,6 +88,7 @@ public class GameModel {
     }
     // reveal self
     gameTable[row][col].set_state(1);// set revealed in MODEL
+
     // reveal around if self is 0
     if (gameTable[row][col]._num != 0
             || gameTable[row][col]._revealedAround
@@ -109,7 +107,7 @@ public class GameModel {
     gameTable[row][col]._underChecking = false;
   }
 
-   boolean[][] genMineTable(int rows,int cols,float chance) {
+  boolean[][] genMineTable(int rows, int cols, float chance) {
     Utils.clamp(chance, 0.1f, 1);
     boolean[][] table = new boolean[rows][cols];
     for (int i = 0; i < rows; i++) {
@@ -128,6 +126,7 @@ public class GameModel {
   }
 
   void initTable(boolean[][] mineTable) {
+    life=GLOBAL.LIFE;
     _cols = mineTable[0].length;
     _rows = mineTable.length;
     gameTable = new Cell[_rows][_cols];

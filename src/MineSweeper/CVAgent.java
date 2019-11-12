@@ -72,7 +72,8 @@ public class CVAgent {
 //            frame.copyTo(_mapFrame);
 //            System.out.println(frame);
             // resized for mine map generation
-            Imgproc.resize(frame, frame, new Size(GLOBAL.ROWS * ratio, GLOBAL.ROWS));
+            GLOBAL.COLS=(int)(GLOBAL.ROWS * ratio);
+            Imgproc.resize(frame, frame, new Size(GLOBAL.COLS, GLOBAL.ROWS));
             _mapFrame=frame;
             Mat f2show=new Mat();
             Imgproc.resize(frame, f2show, new Size(GLOBAL.HEAD_HEIGHT * ratio, GLOBAL.HEAD_HEIGHT));
